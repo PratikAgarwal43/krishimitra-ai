@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  phone         String?   @unique
+  location      String?   // Village/City
+  crops         String?   // Comma-separated list of crops
+  language      String    @default("hi")
+  advisories    Advisory[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Advisory {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  type        String   // weather, pest, market
+  title       String
+  content     String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model MarketPrice {
+  id          String   @id @default(cuid())
+  crop        String
+  mandi       String
+  price       Float
+  unit        String
+  trend       String   // up, down, stable
+  recordedAt  DateTime @default(now())
+}
