@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma generate && next build",
+    "build": "PRISMA_CLIENT_ENGINE_TYPE=library npx prisma generate && next build",
     "start": "next start",
     "lint": "eslint"
   },
