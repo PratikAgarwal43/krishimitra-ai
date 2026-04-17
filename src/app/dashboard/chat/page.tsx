@@ -24,7 +24,7 @@ const languages = [
 ];
 
 const initialMessages = [
-  { id: 1, role: 'assistant', text: "Namaste Rajesh! I'm your Krishi Expert. How can I help you with your farm today?", time: '09:00 AM' },
+  { id: 1, role: 'assistant', text: "Namaste! I'm your Krishi Expert. How can I help you with your farm today?", time: '09:00 AM' },
 ];
 
 export default function ChatPage() {
@@ -41,7 +41,7 @@ export default function ChatPage() {
     }
   }, [messages, isTyping]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputText.trim()) return;
 
     const userText = inputText;
@@ -52,37 +52,43 @@ export default function ChatPage() {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    setMessages([...messages, newMessage]);
+    const newMessages = [...messages, newMessage];
+    setMessages(newMessages);
     setInputText('');
     setIsTyping(true);
 
-    // Simulate AI response based on keywords
-    setTimeout(() => {
-      let responseText = "I'm analyzing your request... This sounds like a specific agricultural query. Based on current data, I'll need a moment to provide the best advice.";
-      
-      const lowerText = userText.toLowerCase();
-      if (lowerText.includes('potato') || lowerText.includes('aloo')) {
-        responseText = "Based on the high humidity in Baruoli, there is a 70% risk of Late Blight in your Potato crop. I recommend applying a copper-based fungicide before the next rain.";
-      } else if (lowerText.includes('weather') || lowerText.includes('mausam')) {
-        responseText = "The weather for next 3 days is stable, but high winds are expected Tuesday. Perfect time for irrigation today, but avoid spraying fertilizers until Wednesday.";
-      } else if (lowerText.includes('price') || lowerText.includes('mandi')) {
-        responseText = "Mandi prices for Agra are up by ₹50 today. Our AI predicts another ₹100 jump by Friday. If you can wait, hold your stock until then.";
-      }
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          message: userText,
+          history: messages.map(m => ({
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: m.text }]
+          }))
+        })
+      });
 
+      const data = await res.json();
+      
       const aiResponse = {
         id: Date.now() + 1,
         role: 'assistant',
-        text: responseText,
+        text: data.text,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       
       setMessages(prev => [...prev, aiResponse]);
+    } catch (err) {
+      console.error("Chat Error:", err);
+    } finally {
       setIsTyping(false);
-    }, 2000);
+    }
   };
 
   const showToast = (feature: string) => {
-    alert(`${feature} feature coming soon! We are working on building a more accessible experience for you.`);
+    alert(`${feature} feature coming soon! Currently, you can talk to the Krishi Expert AI.`);
   };
 
   return (
@@ -97,7 +103,7 @@ export default function ChatPage() {
              <h2 className="font-bold text-lg">AI Krishi Expert</h2>
              <div className="flex items-center gap-2">
                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-               <span className="text-xs font-bold text-foreground/40 uppercase tracking-widest leading-none">Online & Active</span>
+               <span className="text-xs font-bold text-foreground/40 uppercase tracking-widest leading-none">Online & Active (Gemini Powered)</span>
              </div>
            </div>
         </div>
@@ -145,7 +151,7 @@ export default function ChatPage() {
                  </div>
                  
                  <div className="flex flex-col">
-                    <div className={`px-4 py-3 rounded-2xl shadow-sm text-sm font-medium leading-relaxed ${
+                    <div className={`px-4 py-3 rounded-2xl shadow-sm text-sm font-medium leading-relaxed whitespace-pre-wrap ${
                       msg.role === 'user' 
                         ? 'bg-primary text-white rounded-tr-none' 
                         : 'bg-white border border-border rounded-tl-none'
@@ -154,14 +160,6 @@ export default function ChatPage() {
                     </div>
                     <div className={`mt-1.5 flex items-center gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                        <span className="text-[10px] font-bold text-foreground/30 uppercase">{msg.time}</span>
-                       {msg.role === 'assistant' && (
-                         <button 
-                           onClick={() => showToast('Voice playback')}
-                           className="text-primary hover:scale-110 transition-transform"
-                         >
-                           <Volume2 size={12} />
-                         </button>
-                       )}
                     </div>
                  </div>
               </div>
@@ -174,7 +172,7 @@ export default function ChatPage() {
               className="flex justify-start items-center gap-2 text-primary font-bold text-xs"
             >
                <Loader2 size={14} className="animate-spin" />
-               Expert is typing...
+               Expert is analyzing your crop data...
             </motion.div>
           )}
         </AnimatePresence>
@@ -196,7 +194,7 @@ export default function ChatPage() {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Type your question..." 
+              placeholder="Ask about crops, pests, market, or weather..." 
               className="bg-transparent border-none focus:ring-0 w-full text-sm font-medium outline-none"
             />
             <button 
@@ -220,16 +218,16 @@ export default function ChatPage() {
 
           <button 
             onClick={handleSend}
-            disabled={!inputText.trim()}
+            disabled={!inputText.trim() || isTyping}
             className="p-4 bg-primary text-white rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50 disabled:shadow-none active:scale-95"
           >
             <Send size={24} />
           </button>
         </div>
 
-        <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-bold text-foreground/30 uppercase tracking-widest">
+        <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-bold text-foreground/30 uppercase tracking-widest text-center">
            <Info size={12} />
-           <span>This expert advice is generated by AI and should be verified locally.</span>
+           <span>This advice is powered by Gemini AI. Please consult local experts for critical farming decisions.</span>
         </div>
       </div>
     </div>
