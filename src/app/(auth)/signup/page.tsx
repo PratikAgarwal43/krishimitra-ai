@@ -15,7 +15,11 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
-      login({ name: formData.name, email: formData.email, role: formData.role });
+      login({ 
+        name: formData.name, 
+        email: formData.email, 
+        role: formData.role as "Farmer" | "Buyer" | "Researcher" | "FPO Member" | "Agri-expert"
+      });
       setLoading(false);
       window.location.href = "/dashboard";
     }, 1000);
