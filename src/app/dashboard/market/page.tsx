@@ -1,14 +1,41 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import { 
   TrendingUp, Map, BarChart3, Package, 
   ChevronRight, FileText, ShoppingBag, 
-  ArrowUpRight, Info
+  ArrowUpRight, Info, Loader2
 } from "lucide-react";
 
+interface MandiRecord {
+  commodity: string;
+  market: string;
+  modal_price: string;
+}
+
 export default function MarketPage() {
+  const [marketData, setMarketData] = useState<MandiRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchMarketData = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/market?state=Maharashtra");
+      const data = await res.json();
+      setMarketData(data.records || []);
+    } catch (err) {
+      console.error("Market fetch error", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMarketData();
+  }, []);
+
   return (
-    <div className="max-w-6xl mx-auto space-y-10">
+    <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in duration-700">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
@@ -17,8 +44,11 @@ export default function MarketPage() {
         </div>
 
         <div className="flex items-center gap-4">
-           <button className="flex items-center gap-2 px-6 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 hover:bg-gray-100 transition-all">
-              <Map className="w-4 h-4" />
+           <button 
+             onClick={fetchMarketData}
+             className="flex items-center gap-2 px-6 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 hover:bg-gray-100 transition-all"
+           >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Map className="w-4 h-4" />}
               Nearby Mandis
            </button>
            <button className="flex items-center gap-2 px-6 py-3 bg-[#1e5128] text-white rounded-2xl text-sm font-bold hover:bg-[#194322] transition-all shadow-lg shadow-emerald-900/10">
@@ -67,8 +97,41 @@ export default function MarketPage() {
          </div>
       </div>
 
+      {/* Live Market Prices */}
+      <div className="space-y-6">
+         <div className="flex items-center justify-between">
+            <h3 className="text-sm font-black uppercase tracking-widest text-gray-400">Real-time Mandi Prices (Maharashtra)</h3>
+            <span className="text-xs font-bold text-[#1e5128]">Showing {marketData.length} records</span>
+         </div>
+         
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading ? (
+               Array(6).fill(0).map((_, i) => (
+                  <div key={i} className="h-24 bg-gray-50 rounded-3xl animate-pulse" />
+               ))
+            ) : marketData.length > 0 ? (
+               marketData.slice(0, 9).map((record, i) => (
+                  <div key={i} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex items-center justify-between hover:border-emerald-500/30 transition-all group">
+                     <div>
+                        <p className="text-[10px] font-black uppercase text-gray-400 mb-1">{record.market}</p>
+                        <h4 className="text-lg font-bold text-gray-900">{record.commodity}</h4>
+                     </div>
+                     <div className="text-right">
+                        <p className="text-xl font-black text-[#1e5128]">₹{record.modal_price}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase">Per Quintal</p>
+                     </div>
+                  </div>
+               ))
+            ) : (
+               <div className="col-span-full p-10 text-center text-gray-400 font-bold border-2 border-dashed border-gray-100 rounded-3xl">
+                  No live data available for this region.
+               </div>
+            )}
+         </div>
+      </div>
+
       {/* Market Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">
          <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex items-center gap-6">
             <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
                <ShoppingBag className="w-6 h-6" />

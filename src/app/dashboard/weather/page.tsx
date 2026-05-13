@@ -1,14 +1,63 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Cloud, Sun, CloudRain, Wind, Droplets, 
-  MapPin, ThermometerSun, Calendar, Sprout, ChevronRight
+  MapPin, ThermometerSun, Calendar, Sprout, ChevronRight,
+  Loader2, RefreshCw
 } from "lucide-react";
 
+interface WeatherData {
+  main: { temp: number; humidity: number };
+  weather: Array<{ main: string; description: string }>;
+  wind: { speed: number };
+  name: string;
+}
+
 export default function WeatherPage() {
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchWeather = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      // Trying to get user location
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const res = await fetch(`/api/weather?lat=${latitude}&lon=${longitude}`);
+        const data = await res.json();
+        setWeather(data);
+        setLoading(false);
+      }, async () => {
+        // Fallback to default
+        const res = await fetch("/api/weather");
+        const data = await res.json();
+        setWeather(data);
+        setLoading(false);
+      });
+    } catch (err) {
+      setError("Failed to load weather data.");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWeather();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-[#1e5128]" />
+        <p className="text-gray-500 font-bold animate-pulse uppercase tracking-widest text-xs">Fetching Live Climate Data...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-700">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
@@ -17,12 +66,20 @@ export default function WeatherPage() {
               Hyper-local Tracking
            </p>
            <h1 className="text-3xl font-bold text-gray-900 mb-1">Weather Advisory</h1>
-           <p className="text-gray-400 font-medium">Barauli Village, Uttar Pradesh, India</p>
+           <p className="text-gray-400 font-medium">{weather?.name || "Barauli Village"}, India</p>
         </div>
 
-        <div className="flex bg-white rounded-full p-1 border border-gray-100 shadow-sm self-start">
-           <button className="px-6 py-2 bg-[#1e5128] text-white rounded-full text-sm font-bold">Celsius</button>
-           <button className="px-6 py-2 text-gray-400 text-sm font-bold">Fahrenheit</button>
+        <div className="flex items-center gap-4">
+           <button 
+             onClick={fetchWeather}
+             className="p-3 bg-white border border-gray-100 rounded-xl shadow-sm text-gray-400 hover:text-[#1e5128] transition-all"
+           >
+              <RefreshCw className="w-5 h-5" />
+           </button>
+           <div className="flex bg-white rounded-full p-1 border border-gray-100 shadow-sm">
+              <button className="px-6 py-2 bg-[#1e5128] text-white rounded-full text-sm font-bold">Celsius</button>
+              <button className="px-6 py-2 text-gray-400 text-sm font-bold">Fahrenheit</button>
+           </div>
         </div>
       </div>
 
@@ -32,11 +89,13 @@ export default function WeatherPage() {
            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div>
                  <div className="flex items-start gap-4 mb-2">
-                    <h2 className="text-[8rem] font-black leading-none tracking-tighter text-gray-900">32°</h2>
+                    <h2 className="text-[8rem] font-black leading-none tracking-tighter text-gray-900">
+                       {Math.round(weather?.main.temp || 32)}°
+                    </h2>
                  </div>
-                 <div className="flex items-center gap-3 text-2xl font-bold text-gray-700">
-                    <Sun className="w-8 h-8 text-yellow-500" />
-                    Mainly Sunny
+                 <div className="flex items-center gap-3 text-2xl font-bold text-gray-700 capitalize">
+                    {weather?.weather[0].main === "Clear" ? <Sun className="w-8 h-8 text-yellow-500" /> : <Cloud className="w-8 h-8 text-gray-400" />}
+                    {weather?.weather[0].description || "Mainly Sunny"}
                  </div>
               </div>
 
@@ -48,7 +107,7 @@ export default function WeatherPage() {
                        </div>
                        <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Humidity</span>
                     </div>
-                    <span className="text-2xl font-black">45%</span>
+                    <span className="text-2xl font-black">{weather?.main.humidity || 45}%</span>
                  </div>
                  <div className="p-6 bg-gray-50 rounded-3xl flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -57,13 +116,13 @@ export default function WeatherPage() {
                        </div>
                        <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Wind Speed</span>
                     </div>
-                    <span className="text-2xl font-black">12 km/h</span>
+                    <span className="text-2xl font-black">{weather?.wind.speed || 12} km/h</span>
                  </div>
               </div>
            </div>
 
            {/* Hourly Forecast */}
-           <div className="mt-20 flex justify-between items-center px-4 overflow-x-auto pb-4">
+           <div className="mt-20 flex justify-between items-center px-4 overflow-x-auto pb-4 gap-8">
               <HourlyItem time="10 AM" temp="28°" icon={<Sun className="text-yellow-500" />} />
               <HourlyItem time="12 PM" temp="31°" icon={<Sun className="text-yellow-500" />} />
               <HourlyItem time="02 PM" temp="33°" icon={<Sun className="text-yellow-500" />} />
@@ -89,22 +148,20 @@ export default function WeatherPage() {
               <ForecastItem day="Sat" tempLow="20" tempHigh="30" icon={<Sun className="text-yellow-500" />} />
               <ForecastItem day="Sun" tempLow="22" tempHigh="33" icon={<Sun className="text-yellow-500" />} />
            </div>
-
-           <button className="w-full mt-10 py-4 bg-gray-50 text-gray-500 rounded-2xl font-bold text-sm hover:bg-gray-100 transition-all">
-              Full 30-Day Analysis
-           </button>
         </div>
       </div>
 
       {/* Irrigation Advisory */}
       <div className="bg-[#1e5128] rounded-3xl p-6 flex items-center justify-between text-white shadow-xl shadow-emerald-900/10">
          <div className="flex items-center gap-6">
-            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-white">
                <Sprout className="w-6 h-6" />
             </div>
             <div>
                <h3 className="text-lg font-bold uppercase tracking-tight">Smart Irrigation Advisory</h3>
-               <p className="text-white/60 text-sm font-medium">Optimal conditions for sowing today. Soil moisture is sufficient.</p>
+               <p className="text-white/60 text-sm font-medium">
+                  {weather && weather.main.humidity > 60 ? "No irrigation needed today due to high humidity." : "Optimal conditions for sowing today. Soil moisture is sufficient."}
+               </p>
             </div>
          </div>
          <ChevronRight className="w-6 h-6 opacity-50" />
