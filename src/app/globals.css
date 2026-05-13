@@ -1,12 +1,6 @@
-@import "tailwindcss";
-
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-primary: #1e5128;
-  --color-primary-light: #4e9f3d;
-  --color-accent: #d8e9a8;
-  --color-bg-light: #f4f7f5;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #f4f7f5;
@@ -18,36 +12,19 @@
   --border-color: rgba(0, 0, 0, 0.05);
 }
 
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  overflow-x: hidden;
+@layer base {
+  body {
+    @apply bg-[var(--background)] text-[var(--foreground)] antialiased;
+  }
 }
 
-.glass-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 1.5rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+@layer components {
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm;
+  }
 }
 
+/* Custom styles for the restored UI */
 .sidebar-item-active {
-  background-color: var(--primary);
-  color: #ffffff;
-}
-
-.text-gradient {
-  background: linear-gradient(to right, #1e5128, #4e9f3d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Custom Utilities for the Stable UI */
-.bg-soft-green {
-  background-color: #f0fdf4;
-}
-
-.border-soft-green {
-  border-color: #dcfce7;
+  @apply bg-[#1e5128] text-white shadow-lg shadow-emerald-900/10;
 }
