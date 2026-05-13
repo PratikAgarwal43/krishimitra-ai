@@ -1,172 +1,95 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Send, Bot, User, ArrowLeft, Loader2, 
-  RefreshCcw, Info, Sparkles, MessageSquare,
-  Thermometer, Sprout, TrendingUp
+  Send, Mic, Paperclip, Smile, Volume2, 
+  Trash2, Globe, Sparkles, Bot
 } from "lucide-react";
-import Link from "next/link";
-import axios from "axios";
-
-interface Message {
-  role: "user" | "bot";
-  content: string;
-}
+import { useState } from "react";
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "bot", content: "नमस्ते! I am your Krishi Expert. I can help you with crop planning, pest control, and market trends. How is your farm today?" }
-  ]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, loading]);
-
-  const handleSend = async (text: string = input) => {
-    if (!text.trim() || loading) return;
-
-    const userMsg: Message = { role: "user", content: text };
-    setMessages(prev => [...prev, userMsg]);
-    setInput("");
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await axios.post("/api/chat", { message: text });
-      const botMsg: Message = { role: "bot", content: response.data.reply };
-      setMessages(prev => [...prev, botMsg]);
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Network connection issue. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const suggestedPrompts = [
-    { text: "Tomato pest control", icon: <Sprout className="w-4 h-4" /> },
-    { text: "Wheat fertilizer plan", icon: <Thermometer className="w-4 h-4" /> },
-    { text: "Market trends Nashik", icon: <TrendingUp className="w-4 h-4" /> }
-  ];
+  const [message, setMessage] = useState("");
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.05),transparent)] pointer-events-none" />
-
+    <div className="max-w-5xl mx-auto h-[calc(100vh-160px)] flex flex-col">
       {/* Chat Header */}
-      <header className="glass h-20 flex items-center justify-between px-6 sticky top-0 z-50">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="p-2.5 hover:bg-white/5 rounded-xl transition-all">
-            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-          </Link>
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-              <Bot className="text-primary w-6 h-6" />
+      <div className="bg-white rounded-t-[2rem] border border-gray-100 p-6 flex items-center justify-between shadow-sm">
+         <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-[#1e5128] rounded-2xl flex items-center justify-center text-white">
+               <Bot className="w-7 h-7" />
             </div>
             <div>
-              <h1 className="font-bold tracking-tight">Krishi Expert AI</h1>
-              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
-                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                Live Advisor
-              </div>
+               <h2 className="text-lg font-bold text-gray-900">AI Krishi Expert</h2>
+               <p className="text-[10px] font-black uppercase text-emerald-500 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                  Online & Active
+               </p>
             </div>
-          </div>
-        </div>
-        <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground font-medium px-4 py-2 rounded-full bg-white/5">
-          <Sparkles className="w-4 h-4 text-primary" />
-          Powered by Gemini 1.5 Gold
-        </div>
-      </header>
+         </div>
+
+         <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2">
+               <Globe className="w-4 h-4 text-gray-400" />
+               <select className="bg-transparent text-sm font-bold text-gray-700 outline-none appearance-none">
+                  <option>Hindi (हिन्दी)</option>
+                  <option>English</option>
+                  <option>Marathi</option>
+               </select>
+            </div>
+            <button className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+               <Trash2 className="w-5 h-5" />
+            </button>
+         </div>
+      </div>
 
       {/* Messages Area */}
-      <main ref={scrollRef} className="flex-1 max-w-4xl mx-auto w-full p-6 flex flex-col gap-8 overflow-y-auto scroll-smooth pb-40">
-        <AnimatePresence>
-          {messages.map((msg, idx) => (
-            <motion.div 
-              key={idx}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`flex items-start gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${msg.role === "bot" ? "bg-primary text-white" : "bg-slate-700 text-white"}`}>
-                {msg.role === "bot" ? <Bot className="w-5 h-5" /> : <User className="w-5 h-5" />}
-              </div>
-              <div className={`max-w-[85%] p-5 rounded-[1.5rem] leading-relaxed text-sm font-medium shadow-sm ${msg.role === "bot" ? "glass border-primary/10" : "bg-primary text-white"}`}>
-                {msg.content}
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-
-        {loading && (
-          <div className="flex items-start gap-4 animate-pulse">
-            <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30">
-              <Loader2 className="w-5 h-5 text-primary animate-spin" />
+      <div className="flex-1 bg-white border-x border-gray-100 p-8 overflow-y-auto space-y-8 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px]">
+         <div className="flex flex-col items-start gap-2">
+            <div className="flex items-center gap-2 mb-1">
+               <div className="w-6 h-6 bg-[#1e5128] rounded-md flex items-center justify-center text-white scale-75">
+                  <Bot className="w-4 h-4" />
+               </div>
             </div>
-            <div className="glass h-16 w-48 rounded-[1.5rem]" />
-          </div>
-        )}
-
-        {error && (
-          <div className="flex flex-col items-center gap-4 py-8">
-            <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-6 py-4 rounded-2xl text-sm font-medium flex items-center gap-3">
-              <Info className="w-5 h-5" />
-              {error}
+            <div className="bg-gray-50 border border-gray-100 p-5 rounded-2xl rounded-tl-none max-w-2xl text-gray-700 font-medium shadow-sm relative group">
+               Namaste Rajesh! I'm your Krishi Expert. How can I help you with your farm today?
+               <div className="flex items-center gap-4 mt-3 text-[10px] font-bold text-gray-400 uppercase">
+                  09:00 AM
+                  <button className="hover:text-emerald-500 transition-colors">
+                     <Volume2 className="w-3.5 h-3.5" />
+                  </button>
+               </div>
             </div>
-            <button 
-              onClick={() => handleSend(messages[messages.length - 1].content)}
-              className="flex items-center gap-2 text-primary font-bold text-sm hover:underline"
-            >
-              <RefreshCcw className="w-4 h-4" />
-              Try Again
+         </div>
+      </div>
+
+      {/* Input Area */}
+      <div className="bg-white rounded-b-[2rem] border border-gray-100 p-6 shadow-sm">
+         <div className="flex items-center gap-4 bg-gray-50 border border-gray-100 rounded-2xl px-6 py-2 shadow-inner">
+            <button className="text-gray-400 hover:text-[#1e5128] transition-colors">
+               <Paperclip className="w-5 h-5" />
             </button>
-          </div>
-        )}
-      </main>
-
-      {/* Input Section */}
-      <div className="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-background via-background to-transparent">
-        <div className="max-w-4xl mx-auto flex flex-col gap-4">
-          {messages.length < 3 && !loading && (
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {suggestedPrompts.map((p, i) => (
-                <button 
-                  key={i}
-                  onClick={() => handleSend(p.text)}
-                  className="flex items-center gap-2 whitespace-nowrap bg-white/5 border border-border px-4 py-2 rounded-full text-xs font-bold hover:bg-primary/10 hover:border-primary/30 transition-all"
-                >
-                  {p.icon}
-                  {p.text}
-                </button>
-              ))}
-            </div>
-          )}
-          
-          <div className="relative group">
             <input 
               type="text" 
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Ask Krishi Expert (Hindi/English)..."
-              className="w-full bg-black/60 border border-border rounded-[2rem] py-5 pl-8 pr-20 focus:outline-none focus:border-primary transition-all shadow-2xl group-hover:border-primary/30"
+              placeholder="Type your question..." 
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="flex-1 bg-transparent border-none py-4 text-sm font-medium focus:ring-0 placeholder:text-gray-400"
             />
-            <button 
-              onClick={() => handleSend()}
-              disabled={!input.trim() || loading}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 bg-primary hover:bg-emerald-600 rounded-full flex items-center justify-center transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
-            >
-              <Send className="w-5 h-5 text-white" />
-            </button>
-          </div>
-        </div>
+            <div className="flex items-center gap-4 border-l border-gray-200 pl-4">
+               <button className="text-gray-400 hover:text-[#1e5128] transition-colors">
+                  <Smile className="w-5 h-5" />
+               </button>
+               <button className="text-[#1e5128] hover:scale-110 transition-transform">
+                  <Mic className="w-5 h-5" />
+               </button>
+               <button className="w-10 h-10 bg-[#1e5128] text-white rounded-xl flex items-center justify-center hover:bg-[#194322] transition-all shadow-lg shadow-emerald-900/10">
+                  <Send className="w-5 h-5" />
+               </button>
+            </div>
+         </div>
+         <p className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-6">
+            <Sparkles className="w-3 h-3 inline mr-2 opacity-50" />
+            This expert advice is generated by AI and should be verified locally.
+         </p>
       </div>
     </div>
   );
