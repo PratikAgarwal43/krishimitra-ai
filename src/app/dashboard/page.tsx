@@ -1,173 +1,143 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Sprout, Cloud, TrendingUp, MessageSquare, MapPin, Search, Bell, User as UserIcon, LogOut } from "lucide-react";
+import { motion } from "framer-motion";
+import { 
+  Sprout, Cloud, TrendingUp, MessageSquare, 
+  ArrowUpRight, AlertCircle, Droplets, Sun,
+  Navigation, Calendar, ChevronRight
+} from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
-export default function DashboardPage() {
-  const [weather, setWeather] = useState<any>(null);
-  const [market, setMarket] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [wRes, mRes] = await Promise.all([
-          fetch("/api/weather"),
-          fetch("/api/market")
-        ]);
-        const wData = await wRes.json();
-        const mData = await mRes.json();
-        setWeather(wData);
-        setMarket(mData);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
+export default function DashboardOverview() {
+  const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-20 md:w-64 bg-black/50 border-r border-white/5 flex flex-col z-50">
-        <div className="p-6 mb-8 flex items-center gap-3">
-          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shrink-0">
-            <Sprout className="text-white w-6 h-6" />
-          </div>
-          <span className="hidden md:block font-bold text-xl tracking-tight">KrishiMitra</span>
-        </div>
+    <div className="space-y-10 relative z-10">
+      {/* Welcome Section */}
+      <section>
+        <h2 className="text-4xl font-black tracking-tight uppercase mb-2">Welcome Back, {user?.name?.split(" ")[0]}</h2>
+        <p className="text-muted-foreground font-medium flex items-center gap-2">
+           <Navigation className="w-4 h-4 text-primary" />
+           Your farm in Maharashtra is currently seeing optimal conditions.
+        </p>
+      </section>
 
-        <nav className="flex-1 px-4 space-y-2">
-          <NavItem icon={<TrendingUp />} label="Market Prices" active />
-          <NavItem icon={<Cloud />} label="Weather Advisor" />
-          <NavItem icon={<MessageSquare />} label="AI Expert" />
-          <NavItem icon={<Bell />} label="Alerts" />
-        </nav>
+      {/* Primary Analytics Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* AI Action Card */}
+        <motion.div whileHover={{ y: -5 }} className="lg:col-span-2 glass-emerald p-8 rounded-[2.5rem] relative overflow-hidden group">
+           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+              <MessageSquare className="w-32 h-32 text-white" />
+           </div>
+           <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-8">
+                 <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
+                    <AlertCircle className="w-5 h-5 text-primary" />
+                 </div>
+                 <span className="text-xs font-black uppercase tracking-widest text-primary">AI Priority Recommendation</span>
+              </div>
+              <h3 className="text-3xl font-bold mb-4 leading-tight">Apply Potassium-rich fertilizer to your Tomato crop within 48 hours.</h3>
+              <p className="text-muted-foreground font-medium mb-10 max-w-xl">
+                 Based on the upcoming rain forecast and your current soil health report, this application will maximize fruit quality.
+              </p>
+              <Link href="/dashboard/chat" className="btn-primary py-4 px-8 inline-flex items-center gap-3">
+                 Discuss with AI Expert
+                 <ArrowUpRight className="w-5 h-5" />
+              </Link>
+           </div>
+        </motion.div>
 
-        <div className="p-4 border-t border-white/5">
-          <button className="w-full flex items-center gap-3 p-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-            <LogOut className="w-5 h-5" />
-            <span className="hidden md:block text-sm font-medium">Logout</span>
-          </button>
-        </div>
-      </aside>
+        {/* Quick Weather Mini-Widget */}
+        <Link href="/dashboard/weather">
+          <motion.div whileHover={{ scale: 1.02 }} className="glass p-8 h-full rounded-[2.5rem] group cursor-pointer border-none shadow-xl">
+             <div className="flex justify-between items-start mb-10">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Local Weather</p>
+                <div className="w-10 h-10 bg-yellow-500/10 rounded-xl flex items-center justify-center border border-yellow-500/20 text-yellow-500">
+                   <Sun className="w-5 h-5" />
+                </div>
+             </div>
+             <h4 className="text-6xl font-black mb-2">32°</h4>
+             <p className="text-lg font-bold mb-8">Mostly Sunny</p>
+             <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-white/5 rounded-2xl">
+                   <p className="text-[8px] font-black uppercase text-muted-foreground mb-1">Humidity</p>
+                   <p className="text-sm font-bold">42%</p>
+                </div>
+                <div className="p-3 bg-white/5 rounded-2xl">
+                   <p className="text-[8px] font-black uppercase text-muted-foreground mb-1">Wind</p>
+                   <p className="text-sm font-bold">12km/h</p>
+                </div>
+             </div>
+          </motion.div>
+        </Link>
+      </div>
 
-      {/* Main Content */}
-      <main className="pl-20 md:pl-64 pt-6 p-6 md:p-10">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">Welcome Back, Pratik</h1>
-            <p className="text-gray-400 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-emerald-500" />
-              Maharashtra, India • Updated just now
+      {/* Secondary Pulse Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+         {/* Market Pulse Preview */}
+         <div className="glass p-8 rounded-[2.5rem]">
+            <div className="flex items-center justify-between mb-8">
+               <h4 className="text-sm font-black uppercase tracking-widest">Market Pulse</h4>
+               <Link href="/dashboard/market" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+                  View All <ChevronRight className="w-4 h-4" />
+               </Link>
+            </div>
+            <div className="space-y-4">
+               <MarketItem crop="Cotton" price="7,250" trend="+4%" />
+               <MarketItem crop="Soybean" price="4,100" trend="-1%" />
+               <MarketItem crop="Onion" price="2,150" trend="Stable" />
+            </div>
+         </div>
+
+         {/* Upcoming Tasks */}
+         <div className="glass p-8 rounded-[2.5rem]">
+            <div className="flex items-center justify-between mb-8">
+               <h4 className="text-sm font-black uppercase tracking-widest">Upcoming Actions</h4>
+               <Calendar className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <div className="space-y-4">
+               <TaskItem title="Irrigation Cycle" time="Tomorrow, 06:00 AM" />
+               <TaskItem title="Soil Testing" time="Sat, 10:00 AM" />
+               <TaskItem title="Market Visit" time="Mon, 08:30 AM" />
+            </div>
+         </div>
+
+         {/* Platform News/Status */}
+         <div className="glass p-8 rounded-[2.5rem] bg-primary/5 border-primary/10">
+            <h4 className="text-sm font-black uppercase tracking-widest mb-6">Gold Ecosystem Status</h4>
+            <div className="flex items-center gap-4 mb-6">
+               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+               <span className="text-xs font-bold">All Systems Operational</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+               Your KrishiMitra Gold membership is active until Dec 2026. You have unlimited AI Expert consultations.
             </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-              <input 
-                type="text" 
-                placeholder="Search crops, pests..." 
-                className="bg-white/5 border border-white/10 rounded-full py-3 pl-12 pr-6 focus:outline-none focus:border-emerald-500 transition-all w-64 md:w-80"
-              />
-            </div>
-            <div className="w-12 h-12 rounded-full bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center">
-              <UserIcon className="w-6 h-6 text-emerald-400" />
-            </div>
-          </div>
-        </header>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {/* Weather Widget */}
-          <div className="glass-card p-8 group hover:border-emerald-500/30 transition-all relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Cloud className="w-24 h-24 text-white" />
-             </div>
-             <p className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Live Weather</p>
-             <h2 className="text-5xl font-bold mb-6">
-                {loading ? "..." : `${weather?.main?.temp?.toFixed(1)}°C`}
-             </h2>
-             <p className="text-gray-400 mb-1">{weather?.weather?.[0]?.description || "Clear skies"}</p>
-             <p className="text-xs text-gray-500">Humidity: {weather?.main?.humidity}% • Wind: {weather?.wind?.speed} m/s</p>
-          </div>
-
-          {/* Market Widget */}
-          <div className="glass-card p-8 group hover:border-emerald-500/30 transition-all">
-             <p className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Market Watch</p>
-             <div className="space-y-4">
-                {loading ? (
-                   <p className="text-gray-500">Fetching live prices...</p>
-                ) : (
-                   market?.records?.slice(0, 3).map((record: any, idx: number) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
-                         <div>
-                            <p className="text-sm font-bold">{record.commodity}</p>
-                            <p className="text-[10px] text-gray-500">{record.market}, {record.district}</p>
-                         </div>
-                         <div className="text-right">
-                            <p className="text-sm font-bold text-emerald-400">₹{record.modal_price}</p>
-                            <p className="text-[10px] text-gray-500">per Quintal</p>
-                         </div>
-                      </div>
-                   ))
-                )}
-             </div>
-             <button className="w-full mt-6 py-2 rounded-lg border border-white/10 text-xs font-semibold hover:bg-white/5 transition-all">
-                View Full Market Report
-             </button>
-          </div>
-
-          {/* AI Advisor Card */}
-          <div className="glass-card p-8 emerald-gradient border-none relative">
-             <p className="text-emerald-200 text-sm font-bold uppercase tracking-wider mb-4">Krishi Expert AI</p>
-             <h3 className="text-2xl font-bold mb-4">"When should I apply fertilizer to my wheat crop?"</h3>
-             <p className="text-emerald-100/70 text-sm leading-relaxed mb-8">
-                The current soil moisture is optimal. Apply Nitrogen based fertilizers in the next 24 hours before the light rain predicted for Friday.
-             </p>
-             <Link href="/dashboard/chat" className="inline-flex items-center gap-2 bg-white text-emerald-900 px-6 py-3 rounded-full font-bold text-sm hover:bg-emerald-50 transition-all">
-                Ask Krishi Expert
-                <MessageSquare className="w-4 h-4" />
-             </Link>
-          </div>
-        </div>
-
-        {/* Inventory / Recent Activity Section */}
-        <section className="glass-card p-8">
-           <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-bold">Recommended Actions</h3>
-              <span className="text-xs text-gray-500">Based on AI analysis</span>
-           </div>
-           <div className="space-y-4">
-              <ActionItem title="Pest Alert" desc="Aphid population increasing in nearby districts. Monitor crops daily." color="border-red-500/20 bg-red-500/5 text-red-400" />
-              <ActionItem title="Irrigation Sync" desc="Cloudy weather expected. Reduce morning irrigation by 20%." color="border-blue-500/20 bg-blue-500/5 text-blue-400" />
-              <ActionItem title="Market Opportunity" desc="Cotton prices in Nashik Mandi up by 4.2%. Consider selling surplus." color="border-emerald-500/20 bg-emerald-500/5 text-emerald-400" />
-           </div>
-        </section>
-      </main>
+         </div>
+      </div>
     </div>
   );
 }
 
-function NavItem({ icon, label, active = false }: { icon: React.ReactNode, label: string, active?: boolean }) {
+function MarketItem({ crop, price, trend }: { crop: string, price: string, trend: string }) {
   return (
-    <button className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all ${active ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/40" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>
-      <span className="w-6 h-6">{icon}</span>
-      <span className="hidden md:block text-sm font-semibold">{label}</span>
-    </button>
+    <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+       <span className="font-bold text-sm">{crop}</span>
+       <div className="text-right">
+          <p className="text-sm font-black">₹{price}</p>
+          <p className={`text-[10px] font-bold ${trend.includes("+") ? "text-emerald-500" : trend.includes("-") ? "text-red-500" : "text-gray-500"}`}>{trend}</p>
+       </div>
+    </div>
   );
 }
 
-function ActionItem({ title, desc, color }: { title: string, desc: string, color: string }) {
+function TaskItem({ title, time }: { title: string, time: string }) {
   return (
-    <div className={`p-4 rounded-2xl border flex items-start gap-4 ${color}`}>
-       <div className="w-2 h-2 rounded-full bg-current mt-2" />
+    <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl">
+       <div className="w-2 h-8 bg-primary/20 rounded-full" />
        <div>
-          <p className="font-bold text-sm mb-1">{title}</p>
-          <p className="opacity-80 text-xs leading-relaxed">{desc}</p>
+          <p className="text-sm font-bold">{title}</p>
+          <p className="text-[10px] text-muted-foreground font-bold uppercase">{time}</p>
        </div>
     </div>
   );
