@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { 
   Cloud, Sun, CloudRain, Wind, Droplets, 
   MapPin, Search, ArrowLeft, Loader2, ThermometerSun,
-  AlertTriangle, Navigation, Calendar
+  AlertTriangle, Navigation, Calendar, Sprout
 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
