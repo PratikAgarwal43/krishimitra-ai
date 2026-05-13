@@ -23,7 +23,18 @@ export default function WeatherPage() {
     setLoading(true);
     setError("");
     try {
-      // Trying to get user location
+      const savedLat = localStorage.getItem("userLat");
+      const savedLon = localStorage.getItem("userLon");
+
+      if (savedLat && savedLon) {
+        const res = await fetch(`/api/weather?lat=${savedLat}&lon=${savedLon}`);
+        const data = await res.json();
+        setWeather(data);
+        setLoading(false);
+        return;
+      }
+
+      // Trying to get user live location if not saved
       navigator.geolocation.getCurrentPosition(async (pos) => {
         const { latitude, longitude } = pos.coords;
         const res = await fetch(`/api/weather?lat=${latitude}&lon=${longitude}`);

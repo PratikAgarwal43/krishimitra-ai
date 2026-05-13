@@ -28,6 +28,12 @@ export default function SettingsPage() {
         const { latitude, longitude } = position.coords;
         setLocation({ lat: latitude, lon: longitude });
         setAddress(`${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`);
+        
+        // Save to localStorage for other pages
+        localStorage.setItem("userLat", latitude.toString());
+        localStorage.setItem("userLon", longitude.toString());
+        localStorage.setItem("userAddress", `${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`);
+
         setStatus({ type: "success", message: "Location updated successfully!" });
         setIsFetching(false);
       },

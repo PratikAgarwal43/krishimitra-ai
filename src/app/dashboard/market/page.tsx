@@ -20,6 +20,11 @@ export default function MarketPage() {
   const fetchMarketData = async () => {
     setLoading(true);
     try {
+      const savedLat = localStorage.getItem("userLat");
+      const savedLon = localStorage.getItem("userLon");
+      
+      // In a real app, you'd reverse geocode this to a state. 
+      // For now, we'll stick to a default or use the saved state if we had one.
       const res = await fetch("/api/market?state=Maharashtra");
       const data = await res.json();
       setMarketData(data.records || []);
