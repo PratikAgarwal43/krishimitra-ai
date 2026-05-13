@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { 
   LayoutDashboard, Cloud, TrendingUp, MessageSquare, 
   Settings, LogOut, Bell, Search, User, Menu, X, Sprout

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { 
   Cloud, Sun, CloudRain, Wind, Droplets, 
   MapPin, ThermometerSun, Calendar, Sprout, ChevronRight
